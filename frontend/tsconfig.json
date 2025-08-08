@@ -1,4 +1,14 @@
 {
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "CommonJS",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "strict": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
+  },
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },
