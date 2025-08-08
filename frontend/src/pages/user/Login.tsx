@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useToast } from "../../components/ToastContext";
 import { useNavigate, Link } from "react-router-dom";
 import { Briefcase } from "lucide-react";
+import { isValidEmail, isValidPassword } from "../../utils/validation";
 
 export const Login = () => {
   const { showToast } = useToast();
@@ -14,6 +15,15 @@ export const Login = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isValidEmail(formData.email)) {
+    showToast("Please enter a valid email address.", "error");
+    return;
+  }
+
+  if (!isValidPassword(formData.password)) {
+    showToast("Password must be at least 6 characters long.", "error");
+    return;
+  }
     console.log("Login attempt:", formData);
 
    showToast("Login Successful! Welcome back to HireHub.", "success");
@@ -67,7 +77,7 @@ export const Login = () => {
                 placeholder="Enter your password"
                 className="w-full h-11 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#072E4A] focus:border-[#072E4A]"
                 required
-                minLength={6}
+                // minLength={6}
               />
             </div>
 
