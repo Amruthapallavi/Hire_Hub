@@ -8,7 +8,7 @@ const Footer=()=> {
         <div className="container mx-auto px-4 text-center">
           <h3 className="text-2xl font-bold mb-4 text-gray-900">Ready to get started?</h3>
           <p className="text-gray-600 mb-6">
-            Join thousands of professionals who found their dream job through MuseJobs
+            Join thousands of professionals who found their dream job through HireHub
           </p>
           <div className="space-x-4">
             <Link to="/signup">

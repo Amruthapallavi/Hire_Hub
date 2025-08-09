@@ -1,9 +1,25 @@
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
-import { ArrowRight, Briefcase, Users, Star, CheckCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ArrowRight, Briefcase, Users, Star, CheckCircle, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 export const WelcomePage = () => {
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    // Remove any other user data you store if needed
+    setIsLoggedIn(false);
+    navigate("/", { replace: true });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-gray-100 to-white">
       {/* Header */}
@@ -12,15 +28,26 @@ export const WelcomePage = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Briefcase className="h-8 w-8 text-indigo-600" />
-              <h1 className="text-2xl font-bold text-indigo-600">MuseJobs</h1>
+              <h1 className="text-2xl font-bold text-indigo-600">HireHub</h1>
             </div>
             <div className="space-x-4">
-              <Link to="/login">
-                <Button variant="outline">Sign In</Button>
-              </Link>
-              <Link to="/signup">
-                <Button>Get Started</Button>
-              </Link>
+              {isLoggedIn ? (
+                <>
+                  <Button variant="outline" onClick={handleLogout} className="flex items-center space-x-2">
+                    <LogOut className="h-4 w-4" />
+                    <span>Logout</span>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login">
+                    <Button variant="outline">Sign In</Button>
+                  </Link>
+                  <Link to="/signup">
+                    <Button>Get Started</Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -41,7 +68,7 @@ export const WelcomePage = () => {
             </h1>
 
             <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Connect with top employers, explore thousands of opportunities, and take the next step in your professional journey with MuseJobs.
+              Connect with top employers, explore thousands of opportunities, and take the next step in your professional journey with HireHub.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
@@ -82,7 +109,7 @@ export const WelcomePage = () => {
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Why Choose MuseJobs?
+              Why Choose HireHub?
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               We make job searching simple, efficient, and successful
@@ -136,20 +163,32 @@ export const WelcomePage = () => {
               Ready to Find Your Perfect Job?
             </h2>
             <p className="text-xl text-gray-600 mb-8">
-              Join thousands of professionals who found their dream career with MuseJobs
+              Join thousands of professionals who found their dream career with HireHub
             </p>
             <div className="space-x-4">
-              <Link to="/signup">
-                <Button size="lg" className="h-14 px-8 text-lg">
-                  Create Account
-                </Button>
-              </Link>
-              <Link to="/jobs">
-                <Button variant="outline" size="lg" className="h-14 px-8 text-lg">
-                  Browse Jobs
-                </Button>
-              </Link>
-            </div>
+  {isLoggedIn ? (
+    <Button
+      size="lg"
+      className="h-14 px-8 text-lg"
+      onClick={() => navigate("/home")}
+    >
+      Continue to HireHub
+    </Button>
+  ) : (
+    <Link to="/signup">
+      <Button size="lg" className="h-14 px-8 text-lg">
+        Create Account
+      </Button>
+    </Link>
+  )}
+
+  <Link to="/jobs">
+    <Button variant="outline" size="lg" className="h-14 px-8 text-lg">
+      Browse Jobs
+    </Button>
+  </Link>
+</div>
+
           </div>
         </div>
       </section>
@@ -159,10 +198,10 @@ export const WelcomePage = () => {
         <div className="container mx-auto text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
             <Briefcase className="h-6 w-6 text-indigo-600" />
-            <span className="text-xl font-bold text-indigo-600">MuseJobs</span>
+            <span className="text-xl font-bold text-indigo-600">HireHub</span>
           </div>
           <p className="text-gray-500">
-            © 2024 MuseJobs. All rights reserved.
+            © 2024 HireHub. All rights reserved.
           </p>
         </div>
       </footer>

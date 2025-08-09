@@ -1,7 +1,7 @@
 import { Input } from "../../components/ui/input";
 import { Header } from "../../components/Header";
 import { JobCard } from "../../components/JobCard";
-import type { Job } from '../../components/JobCard';
+import type { Job } from '../../types/IJob';
 
 import { Search, TrendingUp, Users, Building } from "lucide-react";
 import { Link } from "react-router-dom";

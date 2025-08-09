@@ -1,25 +1,9 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { MapPin, Calendar, DollarSign, Edit, Trash2 } from "lucide-react";
+import { MapPin, Calendar, DollarSign, Edit, Trash2, IndianRupee } from "lucide-react";
+import type { JobCardProps } from "../types/IJob";
 
-export interface Job {
-  id: string;
-  title: string;
-  company: string;
-  location: string;
-  type: "Full-time" | "Part-time" | "Contract" | "Remote";
-  salary: string;
-  description: string;
-  postedDate: string;
-}
-
-interface JobCardProps {
-  job: Job;
-  onEdit?: (job: Job) => void;
-  onDelete?: (id: string) => void;
-  showActions?: boolean;
-}
 
 export const JobCard = ({ job, onEdit, onDelete, showActions = false }: JobCardProps) => {
   return (
@@ -58,13 +42,17 @@ export const JobCard = ({ job, onEdit, onDelete, showActions = false }: JobCardP
             <span>{job.postedDate}</span>
           </div>
           <div className="flex items-center space-x-1">
-            <DollarSign className="h-4 w-4" />
-            <span>{job.salary}</span>
+            <IndianRupee className="h-4 w-4" />
+<span>
+  {job.salary
+    ? `${job.salary.min} - ${job.salary.max} ${job.salary.currency} / ${job.salary.period}`
+    : "N/A"}
+</span>
           </div>
         </div>
         
         <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm mb-3">
-          {job.type}
+          {job.jobType}
         </span>
         
         <p className="text-sm text-gray-600 line-clamp-3">

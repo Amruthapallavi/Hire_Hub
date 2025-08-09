@@ -3,11 +3,11 @@ import { useToast } from "../../components/ToastContext";
 import { useNavigate, Link } from "react-router-dom";
 import { Briefcase } from "lucide-react";
 import { isValidEmail, isValidName, isValidPassword } from "../../utils/validation";
-
+import { authService } from "../../services/authService";
 export const Signup = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
-
+  const [loading,setLoading]=useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -15,36 +15,51 @@ export const Signup = () => {
     confirmPassword: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (!isValidName(formData.name)) {
+  const { name, email, password, confirmPassword } = formData;
+
+  // Validate inputs
+  if (!isValidName(name)) {
     showToast("Full Name must be at least 3 characters.", "error");
     return;
   }
 
-  if (!isValidEmail(formData.email)) {
+  if (!isValidEmail(email)) {
     showToast("Please enter a valid email address.", "error");
     return;
   }
 
-  if (!isValidPassword(formData.password)) {
+  if (!isValidPassword(password)) {
     showToast("Password must be at least 6 characters long.", "error");
     return;
   }
 
-  if (formData.password !== formData.confirmPassword) {
+  if (password !== confirmPassword) {
     showToast("Passwords do not match.", "error");
     return;
   }
 
-    console.log("Signup attempt:", formData);
+  try {
+    setLoading(true);
 
-   showToast("signup Successful! Welcome back to HireHub.", "success");
+    const res = await authService.Signup(formData);
+    console.log("Signup response:", res);
 
-
+    showToast("Signup successful! Welcome to HireHub.", "success");
     navigate("/login");
-  };
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Something went wrong. Please try again.";
+
+    showToast(message, "error");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -129,12 +144,18 @@ export const Signup = () => {
               />
             </div>
 
-            <button
-              type="submit"
-              className="w-full h-11 bg-[#072E4A] text-white rounded-md hover:bg-[#051e33] transition"
-            >
-              Sign Up
-            </button>
+        <button
+  type="submit"
+  disabled={loading}
+  className={`w-full h-11 rounded-md transition ${
+    loading
+      ? "bg-gray-400 cursor-not-allowed"
+      : "bg-[#072E4A] hover:bg-[#051e33] text-white"
+  }`}
+>
+  {loading ? "Signing up..." : "Sign Up"}
+</button>
+
           </form>
 
           <div className="text-center mt-6 space-y-4">
