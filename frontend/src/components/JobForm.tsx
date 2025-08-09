@@ -20,14 +20,14 @@ interface JobFormProps {
   onSubmit: (
     job: Omit<
       Job,
-      "id" | "postedDate" | "postedBy"
+      "_id" | "postedDate" | "postedBy"
     >
   ) => void;
   onCancel: () => void;
 }
 
 export const JobForm = ({ job, onSubmit, onCancel }: JobFormProps) => {
-    const [formData, setFormData] = useState<JobFormData>({
+  const [formData, setFormData] = useState<JobFormData>({
     title: job?.title || "",
     company: job?.company || "",
     location: job?.location || "",
@@ -42,16 +42,15 @@ export const JobForm = ({ job, onSubmit, onCancel }: JobFormProps) => {
 
   const [errors, setErrors] = useState<Partial<Record<keyof JobFormData, string>>>({});
 
-
   const handleInputChange = (field: keyof JobFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    setErrors((prev) => ({ ...prev, [field]: undefined })); // clear error on change
+    setErrors((prev) => ({ ...prev, [field]: undefined })); 
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const validationErrors = validateJob(formData);
-   if (Object.keys(validationErrors).length > 0) {
+    if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
@@ -69,186 +68,221 @@ export const JobForm = ({ job, onSubmit, onCancel }: JobFormProps) => {
       },
       status: formData.status as JobStatus,
       description: formData.description,
+      createdAt: job?.createdAt || new Date().toISOString(),
     });
   };
 
   return (
-    <Card className="max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>{job ? "Edit Job" : "Post New Job"}</CardTitle>
+    <Card className="max-w-3xl mx-auto shadow-lg border border-gray-200 rounded-lg overflow-hidden">
+<CardHeader className="bg-gradient-to-r bg-gradient-to-r bg-gradient-to-r from-[#072E4A] to-[#a0aec0]
+ text-white py-6 px-8 drop-shadow-md">
+        <CardTitle className="text-2xl font-extrabold tracking-tight">
+          {job ? "Edit Job" : "Post New Job"}
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid gap-4">
+      <CardContent className="bg-white p-8">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="grid gap-6 sm:grid-cols-2">
             <div>
-              <Label htmlFor="title">Job Title</Label>
+              <Label htmlFor="title" className="font-semibold text-gray-700 mb-1 block">
+                Job Title
+              </Label>
               <Input
                 id="title"
                 value={formData.title}
                 onChange={(e) => handleInputChange("title", e.target.value)}
                 placeholder="e.g. Senior Software Engineer"
+                className={`transition border rounded-md px-3 py-2 focus:outline-none focus:ring-2 ${
+                  errors.title ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-600"
+                } w-full`}
                 required
               />
-               {errors.title && <p style={{ color: "red" }}>{errors.title}</p>}
-
+              {errors.title && <p className="text-red-600 mt-1 text-sm">{errors.title}</p>}
             </div>
 
             <div>
-              <Label htmlFor="company">Company</Label>
+              <Label htmlFor="company" className="font-semibold text-gray-700 mb-1 block">
+                Company
+              </Label>
               <Input
                 id="company"
                 value={formData.company}
                 onChange={(e) => handleInputChange("company", e.target.value)}
                 placeholder="e.g. Tech Corp"
+                className={`transition border rounded-md px-3 py-2 focus:outline-none focus:ring-2 ${
+                  errors.company ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-600"
+                } w-full`}
                 required
               />
- {errors.company && <p style={{ color: "red" }}>{errors.company}</p>}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  value={formData.location}
-                  onChange={(e) => handleInputChange("location", e.target.value)}
-                  placeholder="e.g. New York, NY"
-                  required
-                />
-                      {errors.title && <p style={{ color: "red" }}>{errors.title}</p>}
-
-              </div>
-
-              <div>
-                <Label htmlFor="jobType">Job Type</Label>
-                <Select
-                  value={formData.jobType}
-                  onValueChange={(value) => handleInputChange("jobType", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-             <SelectContent>
-  <SelectItem value="Full-Time">Full-time</SelectItem>
-  <SelectItem value="Part-Time">Part-time</SelectItem>
-  <SelectItem value="Contract">Contract</SelectItem>
-  <SelectItem value="Remote">Remote</SelectItem>
-</SelectContent>
-
-                </Select>
-              </div>
-            </div>
-
-            {/* Salary inputs */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-            <div>
-  <Label htmlFor="salaryMin">Salary Min</Label>
-  <Input
-    id="salaryMin"
-    type="number"
-    value={formData.salaryMin}
-    onChange={(e) => handleInputChange("salaryMin", e.target.value)}
-    placeholder="e.g. 80000"
-    min={0}
-    required
-  />
-  {errors.salaryMin && <p style={{ color: "red" }}>{errors.salaryMin}</p>}
-</div>
-
-<div>
-  <Label htmlFor="salaryMax">Salary Max</Label>
-  <Input
-    id="salaryMax"
-    type="number"
-    value={formData.salaryMax}
-    onChange={(e) => handleInputChange("salaryMax", e.target.value)}
-    placeholder="e.g. 120000"
-    min={0}
-    required
-  />
-  {errors.salaryMax && <p style={{ color: "red" }}>{errors.salaryMax}</p>}
-</div>
-
-
-              <div>
-                <Label htmlFor="salaryCurrency">Currency</Label>
-                <Select
-                  value={formData.salaryCurrency}
-                  onValueChange={(value) => handleInputChange("salaryCurrency", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="INR">INR</SelectItem>
-                    <SelectItem value="USD">USD</SelectItem>
-                    <SelectItem value="EUR">EUR</SelectItem>
-                    {/* Add more currencies as needed */}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="salaryPeriod">Salary Period</Label>
-                <Select
-                  value={formData.salaryPeriod}
-                  onValueChange={(value) => handleInputChange("salaryPeriod", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-              <SelectContent>
-  <SelectItem value="Monthly">Monthly</SelectItem>
-  <SelectItem value="Yearly">Yearly</SelectItem>
-    <SelectItem value="Hourly">Hourly</SelectItem>
-
-</SelectContent>
-
-                </Select>
-              </div>
+              {errors.company && <p className="text-red-600 mt-1 text-sm">{errors.company}</p>}
             </div>
 
             <div>
-              <Label htmlFor="status">Job Status</Label>
+              <Label htmlFor="location" className="font-semibold text-gray-700 mb-1 block">
+                Location
+              </Label>
+              <Input
+                id="location"
+                value={formData.location}
+                onChange={(e) => handleInputChange("location", e.target.value)}
+                placeholder="e.g. New York, NY"
+                className={`transition border rounded-md px-3 py-2 focus:outline-none focus:ring-2 ${
+                  errors.location ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-600"
+                } w-full`}
+                required
+              />
+              {errors.location && <p className="text-red-600 mt-1 text-sm">{errors.location}</p>}
+            </div>
+
+            <div>
+              <Label htmlFor="jobType" className="font-semibold text-gray-700 mb-1 block">
+                Job Type
+              </Label>
               <Select
-                value={formData.status}
-                onValueChange={(value) => handleInputChange("status", value)}
+                value={formData.jobType}
+                onValueChange={(value) => handleInputChange("jobType", value)}
               >
-                <SelectTrigger>
-                  <SelectValue />
+                <SelectTrigger className="border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600">
+                  <SelectValue placeholder="Select job type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value='Active'>Active</SelectItem>
-                  <SelectItem value='Closed'>Closed</SelectItem>
-                  {/* Add more statuses if applicable */}
+                  <SelectItem value="Full-Time">Full-time</SelectItem>
+                  <SelectItem value="Part-Time">Part-time</SelectItem>
+                  <SelectItem value="Contract">Contract</SelectItem>
+                  <SelectItem value="Remote">Remote</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Salary inputs */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 items-end">
+            <div>
+              <Label htmlFor="salaryMin" className="font-semibold text-gray-700 mb-1 block">
+                Salary Min
+              </Label>
+              <Input
+                id="salaryMin"
+                type="number"
+                value={formData.salaryMin}
+                onChange={(e) => handleInputChange("salaryMin", e.target.value)}
+                placeholder="e.g. 80000"
+                min={0}
+                className={`transition border rounded-md px-3 py-2 focus:outline-none focus:ring-2 ${
+                  errors.salaryMin ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-600"
+                } w-full`}
+                required
+              />
+              {errors.salaryMin && <p className="text-red-600 mt-1 text-sm">{errors.salaryMin}</p>}
+            </div>
+
+            <div>
+              <Label htmlFor="salaryMax" className="font-semibold text-gray-700 mb-1 block">
+                Salary Max
+              </Label>
+              <Input
+                id="salaryMax"
+                type="number"
+                value={formData.salaryMax}
+                onChange={(e) => handleInputChange("salaryMax", e.target.value)}
+                placeholder="e.g. 120000"
+                min={0}
+                className={`transition border rounded-md px-3 py-2 focus:outline-none focus:ring-2 ${
+                  errors.salaryMax ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-600"
+                } w-full`}
+                required
+              />
+              {errors.salaryMax && <p className="text-red-600 mt-1 text-sm">{errors.salaryMax}</p>}
+            </div>
+
+            <div>
+              <Label htmlFor="salaryCurrency" className="font-semibold text-gray-700 mb-1 block">
+                Currency
+              </Label>
+              <Select
+                value={formData.salaryCurrency}
+                onValueChange={(value) => handleInputChange("salaryCurrency", value)}
+              >
+                <SelectTrigger className="border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600">
+                  <SelectValue placeholder="Select currency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="INR">INR</SelectItem>
+                  <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="EUR">EUR</SelectItem>
+                  {/* Add more currencies as needed */}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="description">Job Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => handleInputChange("description", e.target.value)}
-                placeholder="Describe the role, responsibilities, and requirements..."
-                rows={6}
-                required
-              />
-                    {errors.title && <p style={{ color: "red" }}>{errors.description}</p>}
-
+              <Label htmlFor="salaryPeriod" className="font-semibold text-gray-700 mb-1 block">
+                Salary Period
+              </Label>
+              <Select
+                value={formData.salaryPeriod}
+                onValueChange={(value) => handleInputChange("salaryPeriod", value)}
+              >
+                <SelectTrigger className="border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600">
+                  <SelectValue placeholder="Select period" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Monthly">Monthly</SelectItem>
+                  <SelectItem value="Yearly">Yearly</SelectItem>
+                  <SelectItem value="Hourly">Hourly</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          <div className="flex space-x-4">
-            <Button type="submit" className="flex-1">
+          <div>
+            <Label htmlFor="status" className="font-semibold text-gray-700 mb-1 block">
+              Job Status
+            </Label>
+            <Select
+              value={formData.status}
+              onValueChange={(value) => handleInputChange("status", value)}
+            >
+              <SelectTrigger className="border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Closed">Closed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="description" className="font-semibold text-gray-700 mb-1 block">
+              Job Description
+            </Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => handleInputChange("description", e.target.value)}
+              placeholder="Describe the role, responsibilities, and requirements..."
+              rows={6}
+              className={`resize-none border rounded-md px-3 py-2 focus:outline-none focus:ring-2 ${
+                errors.description ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-600"
+              } w-full`}
+              required
+            />
+            {errors.description && <p className="text-red-600 mt-1 text-sm">{errors.description}</p>}
+          </div>
+
+          <div className="flex gap-4">
+            <Button
+              type="submit"
+className="flex-1 bg-gradient-to-r from-[#072E4A] to-[#0a4a7e] text-white font-semibold rounded-md py-3 transition hover:brightness-110"
+            >
               {job ? "Update Job" : "Post Job"}
             </Button>
             <Button
               type="button"
               variant="outline"
               onClick={onCancel}
-              className="flex-1"
+className="flex-1 bg-gradient-to-r from-[#e0e7ff] to-[#c7d2fe] text-[#072E4A] font-semibold rounded-md py-3 transition hover:brightness-95"
             >
               Cancel
             </Button>

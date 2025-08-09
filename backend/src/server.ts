@@ -23,7 +23,6 @@ app.use('/user',userRoutes);
 const PORT=process.env.PORT;
 app.listen(PORT,async()=>{
 console.log(`server running on PORT ${PORT}`);
-console.log(process.env.FRONTEND_URL)
 
 await connectDB();
 })

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Header } from "../../components/Header";
 import { JobForm } from "../../components/JobForm";
-import { useToast } from "../../components/ToastContext";
+import { useToast } from "../../components/hook/useToast";
 import type { Job } from "../../types/IJob";
 import { useNavigate } from "react-router-dom";
 import { jobService } from "../../services/jobService";
@@ -11,10 +11,10 @@ export const AddJob = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
-  const handleAddJob = async (jobData: Omit<Job, "id" | "postedDate" | "postedBy">) => {
+  const handleAddJob = async (jobData: Omit<Job, "_id" | "postedDate" | "postedBy">) => {
     setIsSubmitting(true);
     try {
-      const createdJob = await jobService.createJob(jobData);
+       await jobService.createJob(jobData);
       showToast("Job posted successfully.", "success");
       navigate("/jobs"); 
     } catch (error) {

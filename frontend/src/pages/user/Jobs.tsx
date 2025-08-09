@@ -1,40 +1,74 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "../../components/Header";
 import { JobCard } from "../../components/JobCard";
-import type { Job } from '../../types/IJob';
+import type { Job } from "../../types/IJob";
 import { Search, Filter } from "lucide-react";
-import { useToast } from "../../components/ToastContext";
+import { useToast } from "../../components/hook/useToast";
 import { useNavigate } from "react-router-dom";
 import { jobService } from "../../services/jobService";
 
-const initialJobs: Job[] = [
-  {
-    id: "1",
-    title: "Senior Frontend Developer",
-    company: "TechCorp",
-    location: "San Francisco, CA",
-    jobType: "Full-Time",
-    salary: {
-      min: 120000,
-      max: 150000,
-      currency: "USD",
-      period: "Yearly",
-    },
-    description: "We are looking for a Senior Frontend Developer to join our dynamic team. You will be responsible for building user-facing features and ensuring the technical feasibility of UI/UX designs.",
-    postedDate: "2 days ago"
-  },
-  // ... other jobs
-];
-
 export const Jobs = () => {
-  const [jobs, setJobs] = useState<Job[]>(initialJobs);
-  const [filteredJobs, setFilteredJobs] = useState<Job[]>(initialJobs);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
+  const [totalJobs, setTotalJobs] = useState(0);
+  const [page, setPage] = useState(1);
+  const limit = 8; 
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [locationFilter, setLocationFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [editingJob, setEditingJob] = useState<Job | null>(null);
   const { showToast } = useToast();
   const navigate = useNavigate();
+
+ useEffect(() => {
+    const fetchJobs = async () => {
+      setLoading(true);
+      try {
+        const res = await jobService.getAllJobs(page, limit);
+        setJobs(res.jobs);
+        setTotalJobs(res.total);
+      } catch (error:any) {
+        console.error("Error loading jobs", error);
+        showToast(error.message,"error")
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJobs();
+  }, [page]);
+
+  const totalPages = Math.ceil(totalJobs / limit);
+
+  const filterJobs = (search: string, location: string, type: string) => {
+    let filtered = [...jobs];
+
+    if (search) {
+      const term = search.toLowerCase();
+      filtered = filtered.filter(
+        (job) =>
+          job.title.toLowerCase().includes(term) ||
+          job.company.toLowerCase().includes(term) ||
+          job.description.toLowerCase().includes(term)
+      );
+    }
+
+    if (location !== "all") {
+      filtered = filtered.filter((job) =>
+        job.location.toLowerCase().includes(location.toLowerCase())
+      );
+    }
+
+    if (type !== "all") {
+      filtered = filtered.filter((job) => job.jobType === type);
+    }
+
+    setFilteredJobs(filtered);
+  };
+
+  useEffect(() => {
+    filterJobs(searchTerm, locationFilter, typeFilter);
+  }, [jobs]);
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
@@ -51,56 +85,37 @@ export const Jobs = () => {
     filterJobs(searchTerm, locationFilter, type);
   };
 
-  const filterJobs = (search: string, location: string, type: string) => {
-    let filtered = jobs;
-
-    if (search) {
-      filtered = filtered.filter(job => 
-        job.title.toLowerCase().includes(search.toLowerCase()) ||
-        job.company.toLowerCase().includes(search.toLowerCase()) ||
-        job.description.toLowerCase().includes(search.toLowerCase())
-      );
-    }
-
-    if (location !== "all") {
-      filtered = filtered.filter(job => 
-        job.location.toLowerCase().includes(location.toLowerCase())
-      );
-    }
-
-    if (type !== "all") {
-      filtered = filtered.filter(job => job.jobType === type);
-    }
-
-    setFilteredJobs(filtered);
-  };
-
   const handleEditJob = (job: Job) => {
-    setEditingJob(job);
-    // optionally implement edit form modal or navigate to edit page
-    // For now, you might want to navigate to edit page like this:
-    navigate(`/jobs/edit/${job.id}`);
+    navigate(`/jobs/edit/${job._id}`);
   };
 
-  const handleDeleteJob = (id: string) => {
-    const updatedJobs = jobs.filter(job => job.id !== id);
-    setJobs(updatedJobs);
-    setFilteredJobs(updatedJobs.filter(job => {
-      const matchesSearch = !searchTerm || 
-        job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.description.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesLocation = locationFilter === "all" || 
-        job.location.toLowerCase().includes(locationFilter.toLowerCase());
-      
-      const matchesType = typeFilter === "all" || job.jobType === typeFilter;
-      
-      return matchesSearch && matchesLocation && matchesType;
-    }));
-    
-    showToast("Job deleted successfully.",'error');
-  };
+const handleDeleteJob = (id: string) => {
+  showToast(
+    "Are you sure you want to delete this job?",
+    "info",
+    {
+      label: "Confirm",
+      onClick: async () => {
+        try {
+          await jobService.deleteJob(id);
+          const updatedJobs = jobs.filter((job) => job._id !== id);
+          setJobs(updatedJobs);
+          showToast("Job deleted successfully", "success");
+        } catch (error) {
+          console.error("Error deleting job:", error);
+          showToast("Failed to delete job", "error");
+        }
+      },
+    },
+    {
+      label: "Cancel",
+      onClick: () => {
+        showToast("Deletion cancelled", "info");
+      },
+    }
+  );
+};
+
 
   const handleClearFilters = () => {
     setSearchTerm("");
@@ -113,18 +128,44 @@ export const Jobs = () => {
     <div className="min-h-screen bg-gray-50 text-gray-900">
       <Header />
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">All Jobs</h1>
-          <button
-            onClick={() => navigate("/jobs/add")} // Navigate to AddJob page
-            className="px-6 py-2 bg-[#072E4A] text-white rounded-md hover:bg-[#051e33] font-semibold transition"
-          >
-            Post New Job
-          </button>
-        </div>
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <svg
+              className="animate-spin h-10 w-10 text-[#072E4A]"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              aria-label="Loading spinner"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              ></path>
+            </svg>
+          </div>
+        ) : (
+          <>
+            <div className="flex justify-between items-center mb-8">
+              <h1 className="text-3xl font-bold">All Jobs</h1>
+              <button
+                onClick={() => navigate("/jobs/add")}
+                className="px-6 py-2 bg-[#072E4A] text-white rounded-md hover:bg-[#051e33] font-semibold transition"
+              >
+                Post New Job
+              </button>
+            </div>
 
-        {/* Filters */}
-        <div className="bg-white p-6 rounded-lg shadow-md mb-8">
+            {/* Filters */}
+  <div className="bg-white p-6 rounded-lg shadow-md mb-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -168,42 +209,65 @@ export const Jobs = () => {
               disabled
             >
               <Filter className="h-5 w-5" />
-              More Filters
+              Search
             </button>
           </div>
-        </div>
+        </div>            
 
-        {/* Results Info */}
-        <div className="mb-6 text-gray-700">
-          Showing {filteredJobs.length} of {jobs.length} jobs
-        </div>
+            {/* Results Info */}
+            <div className="mb-6 text-gray-700">
+              Showing {filteredJobs.length} of {jobs.length} jobs
+            </div>
 
-        {/* Job Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredJobs.map((job) => (
-            <JobCard 
-              key={job.id} 
-              job={job} 
-              onEdit={handleEditJob}
-              onDelete={handleDeleteJob}
-              showActions={true}
-            />
-          ))}
-        </div>
+            {/* Job Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredJobs.map((job) => (
+                <JobCard
+                  key={job._id}
+                  job={job}
+                  onEdit={handleEditJob}
+                  onDelete={() => handleDeleteJob(job._id)}
+                  showActions={true}
+                />
+              ))}
+            </div>
 
-        {/* No jobs found */}
-        {filteredJobs.length === 0 && (
-          <div className="text-center py-12 text-gray-600">
-            <p className="text-xl">No jobs found matching your criteria.</p>
-            <button
-              onClick={handleClearFilters}
-              className="mt-4 px-6 py-2 bg-[#072E4A] text-white rounded-md hover:bg-[#051e33] font-semibold transition"
-            >
-              Clear Filters
-            </button>
-          </div>
+            {/* No jobs found */}
+            {filteredJobs.length === 0 && (
+              <div className="text-center py-12 text-gray-600">
+                <p className="text-xl">No jobs found matching your criteria.</p>
+                <button
+                  onClick={handleClearFilters}
+                  className="mt-4 px-6 py-2 bg-[#072E4A] text-white rounded-md hover:bg-[#051e33] font-semibold transition"
+                >
+                  Clear Filters
+                </button>
+              </div>
+            )}
+
+            <div>
+              <button
+                onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                disabled={page === 1}
+              >
+                Previous
+              </button>
+
+              <span>
+                {" "}
+                Page {page} of {totalPages}{" "}
+              </span>
+
+              <button
+                onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+                disabled={page === totalPages}
+              >
+                Next
+              </button>
+            </div>
+          </>
         )}
       </div>
     </div>
   );
-};
+}

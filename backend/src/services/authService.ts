@@ -9,7 +9,11 @@ interface LoginResponse {
 }
 
 class AuthService {
-  public async signup(name: string, email: string, password: string): Promise<IUser> {
+  public async signup(
+    name: string,
+    email: string,
+    password: string
+  ): Promise<IUser> {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       throw new Error("Email already exists");
@@ -42,7 +46,7 @@ class AuthService {
     }
 
     const payload = { userId: user._id, email: user.email };
-    const token = jwt.sign(payload, secret, { expiresIn: "1h" });
+    const token = jwt.sign(payload, secret, { expiresIn: "14h" });
 
     return {
       user,

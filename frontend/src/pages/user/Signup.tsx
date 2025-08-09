@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useToast } from "../../components/ToastContext";
+import { useToast } from "../../components/hook/useToast";
 import { useNavigate, Link } from "react-router-dom";
 import { Briefcase } from "lucide-react";
 import { isValidEmail, isValidName, isValidPassword } from "../../utils/validation";
@@ -20,7 +20,6 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   const { name, email, password, confirmPassword } = formData;
 
-  // Validate inputs
   if (!isValidName(name)) {
     showToast("Full Name must be at least 3 characters.", "error");
     return;

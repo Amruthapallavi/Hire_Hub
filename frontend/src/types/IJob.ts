@@ -8,7 +8,7 @@ export interface Salary {
 }
 
 export interface Job {
-  id: string;
+  _id: string;
   title: string;
   company: string;
   location: string;
@@ -16,9 +16,17 @@ export interface Job {
   salary: Salary;          
   description: string;
   status?: JobStatus;    
-  postedDate: string;
-  postedBy?: string;       
+  createdAt: string;
+  postedBy?: string;    
+  updatedAt?: string; 
+   
 }
+ export interface JobResponse{
+  jobs:Job[];
+  total:number;
+  page:number;
+  totalPage:number;
+ }
 
 
 export interface JobCardProps {

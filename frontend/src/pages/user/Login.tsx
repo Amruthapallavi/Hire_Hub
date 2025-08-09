@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useToast } from "../../components/ToastContext";
+import { useToast } from "../../components/hook/useToast";
 import { useNavigate, Link } from "react-router-dom";
 import { Briefcase } from "lucide-react";
 import { isValidEmail, isValidPassword } from "../../utils/validation";
@@ -31,13 +31,13 @@ export const Login = () => {
         showToast("Password must be at least 6 characters long.", "error");
         return;
       }
-      console.log("Login attempt:", formData);
 
-      showToast("Login Successful! Welcome back to HireHub.", "success");
 
       const res = await authService.login(formData);
       localStorage.setItem("token", res.token);
-      console.log(res, "from loginpage");
+      localStorage.setItem("user",res.user.name);
+      showToast("Login Successful! Welcome back to HireHub.", "success");
+
       navigate("/home", { replace: true });
     } catch (error: any) {
       const message =

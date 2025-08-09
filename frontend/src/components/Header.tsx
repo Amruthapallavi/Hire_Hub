@@ -1,25 +1,38 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Briefcase, Plus, LogOut } from "lucide-react"; // Import logout icon
+import { Briefcase, Plus, LogOut } from "lucide-react"; 
 import { useEffect, useState } from "react";
-
+import { authService } from "../services/authService";
+import { useToast } from "./hook/useToast";
 export const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
-
-  // State to track login status
+ const {showToast} =useToast();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
-  }, [location]); // re-check on location change to update header
+  }, [location]); 
 
-  const handleLogout = () => {
+  const handleLogout = async() => {
+  
+    try {
+        const token = localStorage.getItem("token");
+    if (!token) return;
+    await authService.LogOut();
     localStorage.removeItem("token");
-    // If you store user info, remove that as well
-    // localStorage.removeItem("user");
+    localStorage.removeItem("user");
+
+    setIsLoggedIn(false);
+    showToast("successfully loggedout","success")
+    navigate("/login",{replace:true});
+
+    } catch (error) {
+      console.error("Logout failed:", error);
+    localStorage.removeItem("token");
     setIsLoggedIn(false);
     navigate("/login", { replace: true });
+    }
   };
 
   return (
@@ -36,7 +49,7 @@ export const Header = () => {
 
           <div className="hidden md:flex items-center space-x-8">
             <Link
-              to="/"
+              to="/home"
               className={`text-sm font-medium transition-colors hover:text-[#072E4A] ${
                 location.pathname === "/" ? "text-blue-600" : "text-gray-600"
               }`}
@@ -54,7 +67,7 @@ export const Header = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            <Link to="/add-job">
+            <Link to="/jobs/add">
               <button className="hidden sm:flex items-center space-x-2 px-3 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
                 <Plus className="h-4 w-4" />
                 <span>Post Job</span>

@@ -15,7 +15,6 @@ export const WelcomePage = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    // Remove any other user data you store if needed
     setIsLoggedIn(false);
     navigate("/", { replace: true });
   };

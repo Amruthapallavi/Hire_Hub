@@ -16,22 +16,19 @@ export const authenticateToken = (
   const cookieToken = req.cookies?.token;
 
   const token = cookieToken || (authHeader && authHeader.split(" ")[1]);
-console.log("Authorization header:", authHeader);
-console.log("Cookie token:", cookieToken);
-console.log("Extracted token:", token);
 
   if (!token) {
     res.status(401).json({ message: "Access Denied. No token provided." });
     return;
   }
 
-try {
-  const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
 
-  req.user = decoded;
-  next();
-} catch (err) {
-  console.error("JWT verification error:", err);
-  res.status(403).json({ message: "Invalid or expired token." });
-}
-}
+    req.user = decoded;
+    next();
+  } catch (err) {
+    console.error("JWT verification error:", err);
+    res.status(403).json({ message: "Invalid or expired token." });
+  }
+};

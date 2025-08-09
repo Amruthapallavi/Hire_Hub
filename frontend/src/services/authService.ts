@@ -10,5 +10,9 @@ export const authService={
     login:async(loginData:LoginData):Promise<LoginResponse>=>{
       const response = await userApi.post("/login",loginData)
       return response.data;
+    },
+    LogOut:async():Promise<void>=>{
+      const response=await userApi.post("/logout");
+      return response.data;
     }
 }

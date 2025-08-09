@@ -7,10 +7,30 @@ import { Search, TrendingUp, Users, Building } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroImage from "../../assets/hero-img.avif";
 import Footer from "../../components/Footer";
+import { useEffect, useState } from "react";
+import { jobService } from "../../services/jobService";
 
-const featuredJobs: Job[] = [];
 
 export const Home = () => {
+
+  const [jobs,setJobs]=useState<Job[]>([]);
+  const [page, setPage] = useState(1);
+  const limit = 8; 
+ useEffect(() => {
+  const fetchAllJobs = async () => {
+    try {
+      const jobs = await jobService.getJobs(page, limit);
+      console.log(jobs);
+      setJobs(jobs.jobs);
+      setPage(jobs.page)
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  fetchAllJobs();
+}, [page, limit]);  
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -89,8 +109,8 @@ export const Home = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {featuredJobs.map((job) => (
-              <JobCard key={job.id} job={job} />
+            {jobs.map((job) => (
+              <JobCard key={job._id} job={job} />
             ))}
           </div>
 
